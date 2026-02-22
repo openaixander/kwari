@@ -43,9 +43,10 @@ ALLOWED_HOSTS = ['.onrender.com']
 
 # Application definition
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
+EMAIL_PORT = 465          # CHANGED from 587
+EMAIL_USE_TLS = False     # CHANGED to False
+EMAIL_USE_SSL = True      # ADDED strict SSL
+EMAIL_TIMEOUT = 10        # ADDED 10-second trap!
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = f"Kwari Market <{EMAIL_HOST_USER}>"
