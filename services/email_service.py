@@ -9,28 +9,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# 1. CREATE THE BACKGROUND THREAD CLASS
-class EmailThread(threading.Thread):
-    def __init__(self, subject, message, from_email, recipient_list):
-        self.subject = subject
-        self.message = message
-        self.from_email = from_email
-        self.recipient_list = recipient_list
-        threading.Thread.__init__(self)
-
-    def run(self):
-        try:
-            print(f"⏳ Attempting to send email to {self.recipient_list}...")
-            send_mail(
-                subject=self.subject,
-                message=self.message,
-                from_email=self.from_email,
-                recipient_list=self.recipient_list,
-                fail_silently=False, # We want it to crash loudly if it fails!
-            )
-            print(f"✅ SUCCESS: Email sent to {self.recipient_list}!")
-        except Exception as e:
-            print(f"❌ CRITICAL EMAIL ERROR: {str(e)}")
 
 class EmailService:
     @classmethod
