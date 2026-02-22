@@ -17,14 +17,18 @@ class EmailThread(threading.Thread):
         threading.Thread.__init__(self)
 
     def run(self):
-        # This code runs in the background!
-        send_mail(
-            subject=self.subject,
-            message=self.message,
-            from_email=self.from_email,
-            recipient_list=self.recipient_list,
-            fail_silently=False,
-        )
+        try:
+            print(f"⏳ Attempting to send email to {self.recipient_list}...")
+            send_mail(
+                subject=self.subject,
+                message=self.message,
+                from_email=self.from_email,
+                recipient_list=self.recipient_list,
+                fail_silently=False, # We want it to crash loudly if it fails!
+            )
+            print(f"✅ SUCCESS: Email sent to {self.recipient_list}!")
+        except Exception as e:
+            print(f"❌ CRITICAL EMAIL ERROR: {str(e)}")
 
 class EmailService:
     @classmethod
