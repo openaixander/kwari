@@ -1,3 +1,4 @@
+import copy
 from decimal import Decimal
 from django.conf import settings
 from products.models import Product
@@ -75,13 +76,25 @@ class Cart:
 
         # Get the actual product objects and add them to the cart
         products = Product.objects.filter(id__in=product_ids)
-        cart = self.cart.copy()
+        cart_copy = copy.deepcopy(self.cart)
 
+        # 2. GHOST SHIELD: Remove items from session if the product was deleted from DB
+        valid_product_ids = [str(p.id) for p in products]
+        for product_id in list(self.cart.keys()):
+            if product_id not in valid_product_ids:
+                # Remove from actual session
+                del self.cart[product_id]
+                self.save()
+                # Remove from our temporary copy
+                if product_id in cart_copy:
+                    del cart_copy[product_id]
 
+        # 3. Attach product objects to the copy
         for product in products:
-            cart[str(product.id)]['product'] = product
+            cart_copy[str(product.id)]['product'] = product
 
-        for item in cart.values():
+        # 4. Safely calculate totals on the isolated copy
+        for item in cart_copy.values():
             item['price'] = Decimal(item['price'])
             item['total_price'] = item['price'] * item['quantity']
             yield item
