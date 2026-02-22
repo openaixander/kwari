@@ -197,3 +197,8 @@ SESSION_SAVE_EVERY_REQUEST = True
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 CLOUDINARY_URL = os.environ.get('CLOUDINARY_URL')
+
+# Tell WhiteNoise to ignore missing source maps from third-party libraries (like Jazzmin)
+WHITENOISE_MANIFEST_STRICT = False
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
