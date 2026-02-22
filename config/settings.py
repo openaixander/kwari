@@ -166,21 +166,18 @@ USE_TZ = True
 
 
 
+# --- STATIC FILES CONFIGURATION ---
 STATIC_URL = '/static/'
 
-# This production code might break development mode, so we check whether we're in DEBUG mode
-if not DEBUG:
-    # Tell Django to copy static assets into a path called `staticfiles` (this is specific to Render)
-    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+# 1. Where your custom CSS/JS/Images live right now (Development)
+STATICFILES_DIRS = [BASE_DIR / 'static']
 
-    # Enable the WhiteNoise storage backend, which compresses static files to reduce disk use
-    # and renames the files with unique names for each version to support long-term caching
-    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# 2. Where Render will gather ALL static files for WhiteNoise (Production)
+# NOTE: This MUST be a different folder name than 'static'!
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# This is where Django looks for project-level static files
-STATICFILES_DIRS = [
-    BASE_DIR / "static",
-]
+# 3. Tell WhiteNoise to compress and cache the files for lightning-fast loading!
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 MEDIA_URL = '/media/'
 
