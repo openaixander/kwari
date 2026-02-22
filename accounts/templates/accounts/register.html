@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create Account - Kwari Market{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* We keep your nice styling here */
+    .registration-container { padding: 3rem 0 4rem; display: flex; align-items: center; justify-content: center; min-height: calc(100vh - 60px); }
+    .registration-wrapper { width: 100%; max-width: 480px; }
+    .page-intro { text-align: center; margin-bottom: 2.5rem; }
+    .page-title { font-size: 2rem; font-weight: 700; color: #1a2332; margin-bottom: 0.5rem; letter-spacing: -0.02em; }
+    .page-subtitle { color: #8b95a5; font-size: 0.95rem; }
+    .registration-card { background-color: white; border-radius: 12px; padding: 2.5rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); }
+    .form-group { margin-bottom: 1.5rem; }
+    .form-label { display: block; font-size: 0.95rem; font-weight: 600; color: #1a2332; margin-bottom: 0.6rem; }
+    .form-label .required { color: #ef4444; margin-left: 0.25rem; }
+    .form-input-wrapper { position: relative; }
+    .form-input { width: 100%; padding: 0.85rem 1rem; border: 2px solid #e8eaed; border-radius: 10px; font-size: 0.95rem; color: #1a2332; transition: all 0.2s; }
+    .form-input:focus { outline: none; border-color: #c99455; box-shadow: 0 0 0 3px rgba(201, 148, 85, 0.1); }
+    .form-input.error { border-color: #ef4444; }
+    .password-toggle { position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); background: none; border: none; color: #8b95a5; cursor: pointer; }
+    .form-error { color: #ef4444; font-size: 0.85rem; margin-top: 0.4rem; display: none; }
+    .form-error.visible { display: block; }
+    .btn-register { background-color: #c99455; color: white; border: none; padding: 1.1rem 2rem; border-radius: 10px; font-weight: 700; font-size: 1.05rem; width: 100%; cursor: pointer; margin-top: 0.5rem; }
+    .btn-register:hover { background-color: #b8834a; }
+    .secondary-nav { text-align: center; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #e8eaed; }
+    
+    /* Django Messages Styling */
+    .django-message { padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; text-align: center; font-weight: 600; }
+    .django-message.error { background-color: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid #ef4444; }
+    .django-message.success { background-color: rgba(34, 197, 94, 0.1); color: #22c55e; border: 1px solid #22c55e; }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="registration-container">
+    <div class="registration-wrapper">
+        
+        <div class="page-intro">
+            <h1 class="page-title">Create Your Account</h1>
+            <p class="page-subtitle">Register to track orders and shop faster</p>
+        </div>
+
+        <div class="registration-card">
+            {% include 'components/alert.html' %}
+            <form id="registrationForm" action="{% url 'accounts:register' %}" method="POST">
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                    <div class="django-message error">
+                        {{ form.non_field_errors.0 }}
+                    </div>
+                {% endif %}
+
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.email.id_for_label }}">Email Address<span class="required">*</span></label>
+                    
+                    {{ form.email }}
+                    
+                    <div class="form-error" id="emailError">Please enter a valid email address</div>
+                    {% if form.email.errors %}
+                        <div class="form-error visible">{{ form.email.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.password.id_for_label }}">Password<span class="required">*</span></label>
+                    <div class="form-input-wrapper">
+                        
+                        {{ form.password }}
+                        
+                        <button type="button" class="password-toggle" id="togglePassword">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+                    <div class="form-error" id="passwordError">Password must be at least 6 characters</div>
+                    {% if form.password.errors %}
+                        <div class="form-error visible">{{ form.password.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.confirm_password.id_for_label }}">Confirm Password<span class="required">*</span></label>
+                    <div class="form-input-wrapper">
+                        
+                        {{ form.confirm_password }}
+                        
+                        <button type="button" class="password-toggle" id="toggleConfirmPassword">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+                    <div class="form-error" id="confirmPasswordError">Passwords do not match</div>
+                    {% if form.confirm_password.errors %}
+                        <div class="form-error visible">{{ form.confirm_password.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <button type="submit" class="btn-register" id="registerBtn">Create Account</button>
+            </form>
+
+            <div class="secondary-nav">
+                <div class="secondary-nav-text">Already have an account?</div>
+                <a href="#" class="secondary-nav-link" style="color: #c99455; text-decoration: none; font-weight: 600;">Login</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Password visibility toggle
+    function setupPasswordToggle(toggleBtnId, inputId) {
+        const toggleBtn = document.getElementById(toggleBtnId);
+        const input = document.getElementById(inputId);
+        const icon = toggleBtn.querySelector('i');
+        
+        toggleBtn.addEventListener('click', function() {
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('bi-eye', 'bi-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.replace('bi-eye-slash', 'bi-eye');
+            }
+        });
+    }
+    
+    setupPasswordToggle('togglePassword', 'password');
+    setupPasswordToggle('toggleConfirmPassword', 'confirmPassword');
+
+    // Frontend Form validation before sending POST to Django
+    document.getElementById('registrationForm').addEventListener('submit', function(e) {
+        let isValid = true;
+        
+        const email = document.getElementById('email');
+        const password = document.getElementById('password');
+        const confirmPassword = document.getElementById('confirmPassword');
+        
+        // Reset errors
+        document.querySelectorAll('.form-error').forEach(el => el.classList.remove('visible'));
+        document.querySelectorAll('.form-input').forEach(el => el.classList.remove('error'));
+
+        // Basic Email Check
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
+            email.classList.add('error');
+            document.getElementById('emailError').classList.add('visible');
+            isValid = false;
+        }
+
+        // Password Length Check
+        if (password.value.length < 6) {
+            password.classList.add('error');
+            document.getElementById('passwordError').classList.add('visible');
+            isValid = false;
+        }
+
+        // Passwords Match Check
+        if (password.value !== confirmPassword.value) {
+            confirmPassword.classList.add('error');
+            document.getElementById('confirmPasswordError').classList.add('visible');
+            isValid = false;
+        }
+
+        // If not valid, stop submission. If valid, let Django handle the POST!
+        if (!isValid) {
+            e.preventDefault(); 
+        } else {
+            document.getElementById('registerBtn').textContent = 'Creating...';
+            document.getElementById('registerBtn').disabled = true;
+        }
+    });
+</script>
+{% endblock %}

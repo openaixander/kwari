@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+
+{% block title %}
+    Your Cart - Kwari Market
+{% endblock title %}
+
+
+{% block extra_css%}
+    <link rel="stylesheet" href="{% static 'css/cart_detail.css' %}">
+{% endblock extra_css %}
+
+
+{% block content %}
+    <!-- Page Header -->
+    <section class="page-header">
+        <div class="container">
+            <h1 class="page-title">Your Cart</h1>
+            <p class="page-subtitle">Review your items before checkout</p>
+        </div>
+    </section>
+
+    <!-- Cart Content -->
+    <section class="cart-container">
+        <div class="container">
+            <div class="cart-layout" id="cartLayout">
+                <!-- Cart Items Section -->
+                <div class="cart-items-wrapper">
+                    <div class="cart-items-section" id="cartItemsSection">
+                        <!-- Cart Item 1 -->
+                         {% for item in cart %}
+                            {% with product=item.product %}
+                        <div class="cart-item" data-id="1" data-price="8500">
+                            <div class="cart-item-image">
+                                {% if product.image %}
+                                    <img src="{{ product.image.url }}" alt="{{ product.name}}" style="width:100%; height:100%; object-fit:cover; border-radius:10px;">
+                                {% else %}
+                                    <i class="bi bi-image"></i>
+                                {% endif %}
+                            </div>
+                            <div class="cart-item-details">
+                                <div class="cart-item-header">
+                                    <h3 class="cart-item-name">
+                                        <a href="{% url 'products:product_detail' product.slug %}" style="text-decoration:none; color:inherit;">
+                                            {{ product.name }}
+                                        </a>
+                                    </h3>
+                                    <a href="{% url 'cart:cart_remove' product.id %}" title="Remove Item" class="cart-item-remove" onclick="removeItem(this)">
+                                        <i class="bi bi-x-lg"></i>
+                                    </a>
+                                </div>
+                                <p class="cart-item-price">₦{{ product.price|intcomma }} each</p>
+                                <div class="cart-item-actions">
+                                    <div class="quantity-control" style="border: none;">
+                                        <span class="text-muted">Qty:</span>
+                                        <span class="quantity-value" style="border:none;">{{ item.quantity }}</span>
+                                    </div>
+                                    <div class="cart-item-subtotal">₦{{ item.total_price|intcomma }}</div>
+                                </div>
+                            </div>
+                        </div> 
+                        {% endwith %}
+                    {% empty %}
+                        <div class="empty-cart">
+                            <div class="empty-cart-icon"><i class="bi bi-cart-x"></i></div>
+                            <h2 class="empty-cart-title">Your cart is empty</h2>
+                            <p class="empty-cart-text">Add some premium fabrics to get started</p>
+                            <a href="{% url 'products:product_list' %}" class="btn-continue-shopping">Start Shopping</a>
+                        </div>
+                    {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Order Summary Section -->
+                {% if cart|length > 0 %}
+                <div class="order-summary-wrapper">
+                    <div class="order-summary">
+                        <h2 class="summary-title">Order Summary</h2>
+                        
+                        <div class="summary-row">
+                            <span class="summary-label">Subtotal (<span id="itemCount">{{ cart|length }}</span> items)</span>
+                            <span class="summary-value" id="subtotalValue">₦{{ cart.get_total_price|intcomma }}</span>
+                        </div>
+                        
+                        <div class="summary-row">
+                            <span class="summary-label">Delivery Fee</span>
+                            <span class="summary-value" id="deliveryFee">₦1,500</span>
+                        </div>
+                        
+                        <hr class="summary-divider">
+                        
+                        <div class="summary-total">
+                            <span class="summary-total-label">Total</span>
+                            <span class="summary-total-value" id="totalValue">₦{{ cart.get_total_price|intcomma }}</span>
+                        </div>
+                        <form method="get" action="{% url 'orders:checkout' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-checkout">Proceed to Checkout</button>
+                        </form>
+                        <a href="{% url 'products:product_list' %}" class="btn-continue-link">Continue Shopping</a>
+                    </div>
+
+                    <!-- Trust Strip -->
+                    <div class="trust-strip">
+                        <div class="trust-items">
+                            <div class="trust-item">
+                                <div class="trust-icon">
+                                    <i class="bi bi-shield-check"></i>
+                                </div>
+                                <span class="trust-text">Secure Ordering</span>
+                            </div>
+                            <div class="trust-item">
+                                <div class="trust-icon">
+                                    <i class="bi bi-box-seam"></i>
+                                </div>
+                                <span class="trust-text">Stock Verified</span>
+                            </div>
+                            <div class="trust-item">
+                                <div class="trust-icon">
+                                    <i class="bi bi-patch-check"></i>
+                                </div>
+                                <span class="trust-text">Kwari Market</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+            </div>
+        </div>
+    </section>
+{% endblock content %}
+
+{% block extra_js %}
+     
+{% endblock extra_js %}

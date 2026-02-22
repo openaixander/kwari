@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+{% block title %}
+    All Products - Kwari Market
+{% endblock title %}
+
+        
+        
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/product_list.css' %}">
+{% endblock extra_css %}
+
+
+
+{% block content %}
+
+    <!-- Page Header -->
+    <section class="page-header">
+        <div class="container">
+            <h1 class="page-title">All Products</h1>
+            <p class="page-subtitle">Browse authentic Kwari Market items</p>
+            <nav class="breadcrumb-custom">
+                <a href="{% url 'core:home' %}">Home</a>
+                <span class="breadcrumb-separator">/</span>
+                <span>Products</span>
+            </nav>
+        </div>
+    </section>
+
+    <!-- Filter & Sort Section -->
+    <section class="filter-section">
+        <div class="container">
+            <div class="filter-wrapper">
+                <div class="category-filters">
+                    <a href="{% url 'products:product_list' %}"
+                    class="filter-btn {% if not category %}active{% endif %}"
+                    >All</a>
+                    {% for cat in categories %}
+                    <a href="{% url 'products:product_list_by_category' cat.slug %}"
+                        class="filter-btn {% if category.slug == cat.slug %}active{% endif %}"
+                    >{{ cat.name }}</a>
+                    {% endfor %}
+                </div>
+                <div class="sort-wrapper">
+                    <form action="" method="get">
+                        <select class="sort-select" name="sort" onchange="this.form.submit()" id="sortSelect">
+                            <option value="newest" {% if current_sort == 'newest' %}selected{% endif %}>Newest</option>
+                            <option value="price-low" {% if current_sort == 'price-low' %}selected{% endif %}>Price: Low to High</option>
+                            <option value="price-high" {% if current_sort == 'price-high' %}selected{% endif %}>Price: High to Low</option>
+                        </select>
+                        <i class="bi bi-chevron-down sort-icon"></i>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Product Grid -->
+    <section class="products-grid-section">
+        <div class="container">
+            <p class="product-count">
+                Showing {{ products.count }}
+                product{{products.count|pluralize}}
+                {% if category %} in {{ category.name }}{% endif %}
+            </p>
+            
+            <div class="row g-3 g-md-4" id="productGrid">
+                <!-- Product 1 -->
+                {% for product in products %}
+                <div class="col-6 col-md-4 col-lg-3">
+                    <div class="product-card">
+                        <div class="product-image">
+                            {% if product.image %}
+                                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="img-fluid" style="width:100%; height:100%; object-fit:cover;" srcset="">
+                            {% else %}
+                                <div class="d-flex align-items-center justify-content-center h-100 bg-light">
+                                        <i class="bi bi-image text-muted fs-1"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="product-content">
+                            <h3 class="product-name">{{ product.name }}</h3>
+                            <div class="product-price">₦{{ product.price|intcomma }}</div>
+                            {% if product.stock > 0 %}
+                                {% if product.stock < 5 %}
+                                    <span class="stock-indicator stock-low">Only {{ product.stock }} left</span>
+                                {% else %}
+                                    <span class="stock-indicator stock-in">In stock</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="stock-indicator text-danger">Out of stock</span>
+                            {% endif %}
+                            <div class="product-actions">
+                                <form action="{% url 'cart:cart_add' product.id %}" method="POST" class="add-to-cart-form">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="quantity" value="1">
+                                    {% if product.stock > 0 %}
+                                        <button type="submit" class="btn-add-cart">Add to Cart</button>
+                                    {% else %}
+                                        <button disabled class="btn-disabled">Out of Stock</button>
+                                    {% endif %}
+                                </form>
+                                <a href="{% url 'products:product_detail' product.slug %}" class="btn-view-details">View</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                    <div class="col-12 text-center py-5">
+                        <i class="bi bi-emoji-frown fs-1 text-muted"></i>
+                        <p class="mt-3">Sorry, we couldn't find any products matching "{{ search_query }}".</p>
+                        <a href="{% url 'core:home' %}" class="btn btn-outline-primary">View All Products</a>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Pagination -->
+    <section class="pagination-section">
+        <div class="container">
+            <button class="load-more-btn">Load More Products</button>
+        </div>
+    </section>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+    </div>
+{% endblock content %}
+    
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const forms = document.querySelectorAll('.add-to-cart-form');
+
+        forms.forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault(); // Stop page reload
+
+                const url = this.action;
+                const formData = new FormData(this);
+                const btn = this.querySelector('button');
+
+                fetch(url, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest', // Tells Django it's AJAX
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Update Navbar Badge
+                        document.querySelector('.cart-badge').textContent = data.cart_total;
+                        
+                        // Visual Feedback (Green Button)
+                        const originalText = btn.innerText;
+                        btn.innerText = "Added!";
+                        btn.classList.add('btn-success');
+                        
+                        setTimeout(() => {
+                            btn.innerText = originalText;
+                            btn.classList.remove('btn-success');
+                        }, 2000);
+                    } else {
+                        alert(data.message); // "Out of stock"
+                    }
+                });
+            });
+        });
+    });
+</script>
+{% endblock extra_js %}

@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Checkout - Kwari Market{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Fix Django's ugly default error lists */
+    ul.errorlist { 
+        color: #ef4444; 
+        font-size: 0.85rem; 
+        list-style-type: none; 
+        padding: 0; 
+        margin: 0.25rem 0 0 0; 
+        font-weight: 500;
+    }
+    .checkout-container { padding: 3rem 0; }
+    .checkout-grid { display: grid; gap: 2rem; }
+    @media (min-width: 992px) {
+        .checkout-grid { grid-template-columns: 1.5fr 1fr; }
+    }
+    .checkout-card { background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    .section-title { font-size: 1.25rem; font-weight: 700; color: #1a2332; margin-bottom: 1.5rem; border-bottom: 2px solid #f8f9fa; padding-bottom: 0.75rem; }
+    
+    /* Form Styles */
+    .form-group { margin-bottom: 1.25rem; }
+    .form-label { display: block; font-weight: 600; margin-bottom: 0.5rem; color: #4a5568; font-size: 0.95rem; }
+    .form-input { width: 100%; padding: 0.75rem 1rem; border: 2px solid #e8eaed; border-radius: 8px; font-size: 0.95rem; transition: border-color 0.2s; }
+    .form-input:focus { outline: none; border-color: #c99455; }
+    .btn-submit { background: #c99455; color: white; border: none; padding: 1rem; width: 100%; border-radius: 8px; font-weight: bold; font-size: 1.1rem; cursor: pointer; transition: 0.3s; margin-top: 1rem; }
+    .btn-submit:hover { background: #b8834a; }
+
+    /* Summary Styles */
+    .summary-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid #f8f9fa; }
+    .summary-item:last-child { border-bottom: none; }
+    .item-info { display: flex; align-items: center; gap: 1rem; }
+    .item-img { width: 60px; height: 60px; object-fit: cover; border-radius: 8px; background: #f8f9fa; }
+    .item-details h4 { font-size: 0.95rem; font-weight: 600; margin: 0 0 0.25rem 0; color: #1a2332; }
+    .item-details p { font-size: 0.85rem; color: #8b95a5; margin: 0; }
+    .item-price { font-weight: 700; color: #c99455; }
+    
+    .summary-totals { margin-top: 1.5rem; padding-top: 1.5rem; border-top: 2px solid #f8f9fa; }
+    .total-row { display: flex; justify-content: space-between; font-weight: 700; font-size: 1.25rem; color: #1a2332; }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="checkout-container">
+    <div class="container">
+        <div class="checkout-grid">
+            {% include 'components/alert.html' %}
+            <div class="checkout-form-section">
+                <div class="checkout-card">
+                    <h2 class="section-title">Delivery Details</h2>
+                    
+                    <form method="POST">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label" for="{{ form.full_name.id_for_label }}">Full Name</label>
+                                    {{ form.full_name }}
+                                    {{ form.full_name.errors }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label" for="{{ form.phone_number.id_for_label }}">Phone Number</label>
+                                    {{ form.phone_number }}
+                                    {{ form.phone_number.errors }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="{{ form.delivery_address.id_for_label }}">Full Delivery Address</label>
+                            {{ form.delivery_address }}
+                            {{ form.delivery_address.errors }}
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="{{ form.order_note.id_for_label }}">Order Notes (Optional)</label>
+                            {{ form.order_note }}
+                            {{ form.order_note.errors }}
+                        </div>
+
+                        <button type="submit" class="btn-submit">Place Order</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="checkout-summary-section">
+                <div class="checkout-card">
+                    <h2 class="section-title">Order Summary</h2>
+                    
+                    <div class="summary-items">
+                        {% for item in cart %}
+                        <div class="summary-item">
+                            <div class="item-info">
+                                {% if item.product.image %}
+                                    <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="item-img">
+                                {% else %}
+                                    <div class="item-img d-flex align-items-center justify-content-center text-muted"><i class="bi bi-image"></i></div>
+                                {% endif %}
+                                <div class="item-details">
+                                    <h4>{{ item.product.name }}</h4>
+                                    <p>Qty: {{ item.quantity }}</p>
+                                </div>
+                            </div>
+                            <div class="item-price">₦{{ item.total_price|intcomma }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="summary-totals">
+                        <div class="total-row">
+                            <span>Total to Pay</span>
+                            <span>₦{{ cart.get_total_price|intcomma }}</span>
+                        </div>
+                        <p class="text-muted text-center mt-3" style="font-size: 0.85rem;">
+                            <i class="bi bi-shield-lock text-success"></i> Secure Checkout
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+{% endblock %}

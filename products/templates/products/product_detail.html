@@ -1,0 +1,193 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}
+    {{ product.name }} - Kwari Market
+{% endblock title %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/product_detail.css' %}">
+{% endblock extra_css %}
+
+
+{% block content %}
+    <section class="product-detail-container">
+        <div class="container">
+            <div class="product-layout">
+                <div class="product-left">
+                    <div class="product-media-section">
+                        <div class="main-image-container">
+                            {% if product.image %}
+                                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="img-fluid" style="max-height: 400px; width: auto;">
+                            {% else %}
+                                <i class="bi bi-image" style="font-size: 4rem; color: #ccc;"></i>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-right">
+                    <div class="product-info-section">
+                        <h1 class="product-name">{{ product.name }}</h1>
+                        <div class="product-price">₦{{ product.price|intcomma }}</div>
+
+                        {% if product.stock > 0 %}
+                            {% if product.stock < 5 %}  
+                                <div class="stock-status low-stock">
+                                    <i class="bi bi-exclamation-circle-fill"></i>
+                                    <span>Low stock: Only {{ product.stock }} left</span>
+                                </div>
+                            {% else %}
+                                <div class="stock-status in-stock">
+                                    <i class="bi bi-check-circle-fill"></i>
+                                    <span>In stock ({{ product.stock }} available)</span>
+                                </div>
+                            {% endif %}
+                        {% else %}
+                            <div class="stock-status text-danger bg-danger-subtle">
+                                <i class="bi bi-x-circle-fill"></i>
+                                <span>Out of Stock</span>
+                            </div>
+                        {% endif %}
+
+                        <div class="product-description">
+                            <div class="section-label" style="font-weight: 600; margin-bottom: 0.5rem; text-transform: uppercase; font-size: 0.85rem; color: #8b95a5;">Description</div>
+                            <p class="description-text">{{ product.description|linebreaks }}</p>
+                        </div>
+                    </div>
+
+                    <div class="purchase-section">
+                        <form action="{% url 'cart:cart_add' product.id %}" method="POST">
+                            {% csrf_token %}
+                            
+                            <div class="quantity-selector-wrapper">
+                                <div class="quantity-label" style="margin-bottom: 0.5rem; font-weight: 600;">Quantity</div>
+                                <div class="quantity-selector">
+                                    <button type="button" class="quantity-btn" id="decreaseBtn">
+                                        <i class="bi bi-dash"></i>
+                                    </button>
+                                    
+                                    <input 
+                                        type="number" 
+                                        name="quantity" 
+                                        id="quantityInput" 
+                                        class="quantity-display" 
+                                        value="1" 
+                                        min="1" 
+                                        max="{{ product.stock }}"
+                                    >
+
+                                    <button type="button" class="quantity-btn" id="increaseBtn">
+                                        <i class="bi bi-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn-add-to-cart" id="addToCartBtn" {% if product.stock == 0 %}disabled{% endif %}>
+                                <i class="bi bi-cart-plus"></i>
+                                <span>{% if product.stock == 0 %}Out of Stock{% else %}Add to Cart{% endif %}</span>
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="trust-section" style="margin-top: 1.5rem; display: grid; gap: 1rem;">
+                        <div class="trust-item" style="display: flex; gap: 0.75rem; align-items: center;">
+                            <i class="bi bi-patch-check" style="font-size: 1.5rem; color: #c99455;"></i>
+                            <div><div style="font-weight: 600; font-size: 0.9rem;">Authentic Product</div><div style="font-size: 0.8rem; color: #666;">Verified Kwari Market quality</div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {% if related_products %}
+    <section class="related-section">
+        <div class="container">
+            <h2 class="section-title" style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem;">You May Also Like</h2>
+            <div class="related-products-scroll">
+                {% for related in related_products %}
+                <a href="{% url 'products:product_detail' related.slug %}" class="related-product-card">
+                    <div class="related-product-image">
+                        {% if related.image %}
+                            <img src="{{ related.image.url }}" alt="{{ related.name }}" style="width:100%; height:100%; object-fit:cover;">
+                        {% else %}
+                            <i class="bi bi-image" style="font-size: 2rem; color: #ccc;"></i>
+                        {% endif %}
+                    </div>
+                    <div class="related-product-info">
+                        <h3 class="related-product-name">{{ related.name }}</h3>
+                        <div class="related-product-price">₦{{ related.price|intcomma }}</div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+    {% endif %}
+{% endblock content %}
+
+
+{% block extra_js %}
+   <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 1. Select Elements
+        const qtyInput = document.getElementById('quantityInput');
+        const decreaseBtn = document.getElementById('decreaseBtn');
+        const increaseBtn = document.getElementById('increaseBtn');
+        
+        // 2. Get Max Stock from Django Template
+        // Use default:0 to prevent syntax errors if stock is None
+        const maxStock = {{ product.stock|default:0 }}; 
+
+        console.log("JS Loaded. Max Stock:", maxStock); // Debug check
+
+        // 3. Define the Update Logic
+        function updateQuantity(amount) {
+            let currentVal = parseInt(qtyInput.value);
+            if (isNaN(currentVal)) currentVal = 1;
+
+            let newVal = currentVal + amount;
+
+            // Logic Check: Don't go below 1
+            if (newVal < 1) newVal = 1;
+            
+            // Logic Check: Don't go above Max Stock
+            if (newVal > maxStock) {
+                newVal = maxStock;
+                // Optional: alert(`Only ${maxStock} available`);
+            }
+
+            qtyInput.value = newVal;
+        }
+
+        // 4. Attach Listeners
+        if (decreaseBtn) {
+            decreaseBtn.addEventListener('click', function() {
+                updateQuantity(-1);
+            });
+        }
+
+        if (increaseBtn) {
+            increaseBtn.addEventListener('click', function() {
+                updateQuantity(1);
+            });
+        }
+
+        // 5. Manual Input Safety Check
+        if (qtyInput) {
+            qtyInput.addEventListener('change', function() {
+                let val = parseInt(this.value);
+                if (val > maxStock) {
+                    this.value = maxStock;
+                    alert(`Sorry, we only have ${maxStock} items in stock.`);
+                }
+                if (val < 1) {
+                    this.value = 1;
+                }
+            });
+        }
+    });
+   </script>
+{% endblock extra_js %}

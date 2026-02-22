@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Order #{{ order.id }} - Kwari Market{% endblock %}
+
+{% block extra_css %}
+<style>
+    
+    .receipt-container { padding: 4rem 0; background-color: #f8f9fa; min-height: 80vh; }
+    .receipt-card { background: white; border-radius: 12px; padding: 3rem; box-shadow: 0 4px 15px rgba(0,0,0,0.05); max-width: 800px; margin: 0 auto; }
+    
+    .receipt-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; padding-bottom: 2rem; border-bottom: 2px solid #f8f9fa; }
+    .company-logo { font-weight: 700; font-size: 1.5rem; color: #1a2332; text-decoration: none; }
+    .company-logo span { color: #c99455; }
+    
+    .invoice-details { text-align: right; }
+    .invoice-title { font-size: 2rem; font-weight: 800; color: #1a2332; letter-spacing: -0.02em; margin-bottom: 0.25rem; }
+    .invoice-id { color: #8b95a5; font-weight: 600; }
+    
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 3rem; }
+    .info-block h6 { font-size: 0.85rem; color: #8b95a5; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; margin-bottom: 0.75rem; }
+    .info-block p { margin: 0; color: #1a2332; font-weight: 500; line-height: 1.6; }
+    
+    .receipt-table th { background-color: #f8f9fa; color: #4a5568; font-weight: 600; font-size: 0.9rem; padding: 1rem; border: none; }
+    .receipt-table td { padding: 1rem; vertical-align: middle; border-bottom: 1px solid #e8eaed; color: #1a2332; font-weight: 500; }
+    
+    .receipt-totals { width: 300px; margin-left: auto; margin-top: 2rem; }
+    .total-row { display: flex; justify-content: space-between; padding: 0.75rem 0; font-weight: 600; color: #4a5568; }
+    .total-row.grand-total { border-top: 2px solid #1a2332; font-size: 1.25rem; color: #1a2332; font-weight: 800; padding-top: 1rem; margin-top: 0.5rem; }
+    
+    .status-badge { display: inline-block; padding: 0.4rem 1rem; border-radius: 50px; font-size: 0.85rem; font-weight: 700; margin-top: 0.5rem; }
+    .status-pending { background-color: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+    .status-processing { background-color: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+    .status-shipped { background-color: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
+    .status-delivered { background-color: rgba(34, 197, 94, 0.1); color: #22c55e; }
+    
+    .receipt-actions { display: flex; gap: 1rem; justify-content: center; margin-top: 3rem; }
+    .btn-action { padding: 0.75rem 2rem; border-radius: 8px; font-weight: 600; text-decoration: none; transition: 0.2s; display: inline-flex; align-items: center; gap: 0.5rem; }
+    .btn-primary { background-color: #c99455; color: white; border: none; }
+    .btn-primary:hover { background-color: #b8834a; color: white; }
+    .btn-secondary { background-color: white; color: #4a5568; border: 2px solid #e8eaed; }
+    .btn-secondary:hover { border-color: #c99455; color: #c99455; }
+    /* Mobile Responsive Fixes */
+    @media (max-width: 768px) {
+        .receipt-card { padding: 1.5rem; } /* Less padding on phones */
+        .receipt-header { flex-direction: column; gap: 1.5rem; } /* Stack logo and title */
+        .invoice-details { text-align: left; }
+        .info-grid { grid-template-columns: 1fr; gap: 1.5rem; } /* Stack columns into 1 row */
+        .receipt-totals { width: 100%; margin-left: 0; } /* Make totals full width */
+        .receipt-actions { flex-direction: column; } /* Stack buttons */
+        .btn-action { width: 100%; justify-content: center; }
+    }
+    /* Print Styles (Hides buttons when the user tries to print the page) */
+    @media print {
+        body { background-color: white; }
+        .receipt-container { padding: 0; }
+        .receipt-card { box-shadow: none; padding: 0; }
+        .receipt-actions, nav, footer { display: none !important; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="receipt-container">
+    <div class="container">
+        <div class="receipt-card">
+            
+            <div class="receipt-header">
+                <div>
+                    <div class="company-logo">Kwari<span>Market</span></div>
+                    <p class="text-muted small mt-2 mb-0">Kano, Nigeria<br>support@kwarimarket.com</p>
+                </div>
+                <div class="invoice-details">
+                    <h1 class="invoice-title">RECEIPT</h1>
+                    <div class="invoice-id">Order #ORD-{{ order.id|stringformat:"04d" }}</div>
+                    <div class="status-badge status-{{ order.status|lower }}">{{ order.get_status_display }}</div>
+                </div>
+            </div>
+
+            <div class="info-grid">
+                <div class="info-block">
+                    <h6>Billed To</h6>
+                    <p>{{ order.full_name }}</p>
+                    <p>{{ order.phone_number }}</p>
+                    <p>{{ order.user.email }}</p>
+                </div>
+                <div class="info-block">
+                    <h6>Shipping Address</h6>
+                    <p>{{ order.delivery_address|linebreaksbr }}</p>
+                    <p class="mt-2 text-muted small"><strong>Date:</strong> {{ order.created_at|date:"F d, Y" }}</p>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table receipt-table">
+                    <thead>
+                        <tr>
+                            <th>Item Description</th>
+                            <th class="text-center">Qty</th>
+                            <th class="text-end">Price</th>
+                            <th class="text-end">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in order.items.all %}
+                        <tr>
+                            <td>
+                                <strong>{{ item.product.name }}</strong>
+                            </td>
+                            <td class="text-center">{{ item.quantity }}</td>
+                            <td class="text-end">₦{{ item.price|intcomma }}</td>
+                            <td class="text-end fw-bold">₦{{ item.get_cost|intcomma }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="receipt-totals">
+                <div class="total-row">
+                    <span>Subtotal</span>
+                    <span>₦{{ order.get_total_cost|intcomma }}</span>
+                </div>
+                <div class="total-row">
+                    <span>Shipping</span>
+                    <span>₦0.00</span>
+                </div>
+                <div class="total-row grand-total">
+                    <span>Total Paid</span>
+                    <span>₦{{ order.get_total_cost|intcomma }}</span>
+                </div>
+            </div>
+
+            <div class="receipt-actions">
+                <a href="{% url 'accounts:dashboard' %}" class="btn-action btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to Dashboard
+                </a>
+                <button onclick="window.print()" class="btn-action btn-primary">
+                    <i class="bi bi-printer"></i> Print / Save PDF
+                </button>
+            </div>
+
+        </div>
+    </div>
+</section>
+{% endblock %}

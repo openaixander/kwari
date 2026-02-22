@@ -1,0 +1,18 @@
+<footer class="footer">
+    <div class="container">
+        <div class="footer-brand">Kwari<span>Market</span></div>
+        <div class="footer-contact">
+            <p>Premium textiles and caps from Kwari Market</p>
+            <p>Contact: info@kwarimarket.com</p>
+        </div>
+        <ul class="footer-links">
+            <li><a href="{% url 'core:home' %}">Home</a></li>
+            <li><a href="{% url 'cart:cart_detail' %}">Cart</a></li>
+            <li><a href="{% url 'accounts:login' %}">Login</a></li> <li><a href="#">About</a></li>
+            <li><a href="#">Contact</a></li>
+        </ul>
+        <div class="footer-bottom">
+            <p>&copy; {{ "now"|date:"Y"  }} Kwari Market. All rights reserved.</p>
+        </div>
+    </div>
+</footer>
