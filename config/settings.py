@@ -225,7 +225,7 @@ LOGGING = {
     'loggers': {
         'django': {
             'handlers': ['console'],
-            'level': 'ERROR', # Only print Critical Errors
+            'level': 'ERROR', 
             'propagate': True,
         },
     },
