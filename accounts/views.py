@@ -8,6 +8,15 @@ from .forms import UserRegistrationForm
 from orders.models import Order
 # Create your views here.
 
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout
+from services.auth_service import AuthService
+from services.email_service import EmailService # (We will keep the import just in case)
+from .forms import UserRegistrationForm
+from orders.models import Order
+
 def register_view(request):
     if request.method == 'POST':
         form = UserRegistrationForm(request.POST)
@@ -19,17 +28,27 @@ def register_view(request):
             # Call our Service (Business Logic)
             user = AuthService.register_user(email, password)
             
-            # Send Email
-            domain = request.get_host()
-            protocol = request.scheme
-            EmailService.send_activation_email(user, domain, protocol)
+            # --- THE B2B PITCH BYPASS ---
+            # 1. Force the user to be active immediately
+            user.is_active = True
+            user.save()
+            
+            # 2. Log them in instantly so they don't have to type their password again!
+            login(request, user)
+            
+            # 3. Comment out the blocked email service
+            # domain = request.get_host()
+            # protocol = request.scheme
+            # EmailService.send_activation_email(user, domain, protocol)
 
-            messages.success(request, "Check your email to activate your account!")
-            return redirect('accounts:login')
+            # 4. Give them a warm welcome and redirect straight to the shop or dashboard
+            messages.success(request, "Welcome to Kasuwar Kwari! Your account is active.")
+            return redirect('products:product_list') 
     else:
         form = UserRegistrationForm()
 
     return render(request, 'accounts/register.html', {'form': form})
+
 
 def activate_view(request, uidb64, token):
     """
