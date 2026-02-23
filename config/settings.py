@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     'core',
     'products',
     'orders',
+    'pwa'
 ]
 
 JAZZMIN_SETTINGS = {
@@ -232,3 +233,27 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 #         },
 #     },
 # }
+
+# --- PROGRESSIVE WEB APP (PWA) SETTINGS ---
+PWA_APP_NAME = 'Kasuwar Kwari'
+PWA_APP_DESCRIPTION = "The Digital Hub for Kwari Market Merchants"
+PWA_APP_THEME_COLOR = '#0d6efd' # The primary blue color of your Bootstrap theme
+PWA_APP_BACKGROUND_COLOR = '#ffffff'
+PWA_APP_DISPLAY = 'standalone' # This hides the browser search bar!
+PWA_APP_SCOPE = '/'
+PWA_APP_ORIENTATION = 'portrait'
+PWA_APP_START_URL = '/'
+PWA_APP_STATUS_BAR_COLOR = 'default'
+
+# The App Icon that will show on the phone's home screen
+PWA_APP_ICONS = [
+    {
+        'src': '/static/images/logo-icon-512.svg',
+        'sizes': '512x512',
+        'type': 'image/png'
+    }
+]
+PWA_APP_ICONS_APPLE = PWA_APP_ICONS
+
+PWA_APP_DIR = 'ltr'
+PWA_APP_LANG = 'en-US'

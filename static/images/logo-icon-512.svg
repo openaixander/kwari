@@ -1,0 +1,114 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+    <!-- Background -->
+    <rect width="512" height="512" fill="#1a2332" rx="90"/>
+    
+    <!-- Outer glow circle -->
+    <circle cx="256" cy="256" r="200" fill="url(#outerGlow)" opacity="0.15"/>
+    
+    <!-- Main circle background with gradient -->
+    <defs>
+        <linearGradient id="mainGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#d4a568;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#c99455;stop-opacity:1" />
+        </linearGradient>
+        
+        <linearGradient id="outerGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#c99455;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#c99455;stop-opacity:0.3" />
+        </linearGradient>
+        
+        <linearGradient id="fabricGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" style="stop-color:#0d1219;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#1a2332;stop-opacity:1" />
+        </linearGradient>
+        
+        <linearGradient id="threadGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" style="stop-color:#d4a568;stop-opacity:1" />
+            <stop offset="50%" style="stop-color:#e0b478;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#d4a568;stop-opacity:1" />
+        </linearGradient>
+        
+        <!-- Shadow filter -->
+        <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="8"/>
+            <feOffset dx="0" dy="4" result="offsetblur"/>
+            <feComponentTransfer>
+                <feFuncA type="linear" slope="0.3"/>
+            </feComponentTransfer>
+            <feMerge>
+                <feMergeNode/>
+                <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+        </filter>
+        
+        <!-- Inner shadow for depth -->
+        <filter id="innerShadow">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="4"/>
+            <feOffset dx="0" dy="-2"/>
+            <feComposite in2="SourceAlpha" operator="arithmetic" k2="-1" k3="1"/>
+            <feColorMatrix type="matrix" values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0   0 0 0 0.2 0"/>
+            <feBlend in2="SourceGraphic" mode="multiply"/>
+        </filter>
+    </defs>
+    
+    <!-- Main golden circle with shadow -->
+    <circle cx="256" cy="256" r="180" fill="url(#mainGradient)" filter="url(#shadow)"/>
+    
+    <!-- Inner shadow for depth -->
+    <circle cx="256" cy="256" r="180" fill="transparent" stroke="rgba(0,0,0,0.1)" stroke-width="2"/>
+    
+    <!-- Fabric fold/triangle shape (enhanced) -->
+    <path d="M 160 160 L 320 240 L 352 256 L 320 272 L 160 352 Z" 
+          fill="url(#fabricGradient)" 
+          opacity="0.95"
+          filter="url(#shadow)"/>
+    
+    <!-- Highlight on fabric -->
+    <path d="M 160 160 L 200 180 L 200 332 L 160 352 Z" 
+          fill="rgba(255,255,255,0.08)"/>
+    
+    <!-- Thread/weaving detail (enhanced curved path) -->
+    <path d="M 200 200 Q 240 220, 220 260 Q 210 290, 200 312" 
+          stroke="url(#threadGradient)" 
+          stroke-width="12" 
+          fill="none" 
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          opacity="0.9"/>
+    
+    <!-- Secondary thread detail -->
+    <path d="M 190 210 Q 230 230, 210 270 Q 200 300, 190 322" 
+          stroke="rgba(212, 165, 104, 0.3)" 
+          stroke-width="6" 
+          fill="none" 
+          stroke-linecap="round"/>
+    
+    <!-- Decorative dots (button/stitch details) with glow -->
+    <g filter="url(#shadow)">
+        <!-- Top button -->
+        <circle cx="340" cy="190" r="20" fill="#0d1219" opacity="0.6"/>
+        <circle cx="340" cy="190" r="16" fill="#1a2332"/>
+        <circle cx="340" cy="190" r="6" fill="rgba(201, 148, 85, 0.3)"/>
+        
+        <!-- Middle button -->
+        <circle cx="360" cy="256" r="18" fill="#0d1219" opacity="0.5"/>
+        <circle cx="360" cy="256" r="14" fill="#1a2332"/>
+        <circle cx="360" cy="256" r="5" fill="rgba(201, 148, 85, 0.25)"/>
+        
+        <!-- Bottom button -->
+        <circle cx="340" cy="322" r="20" fill="#0d1219" opacity="0.6"/>
+        <circle cx="340" cy="322" r="16" fill="#1a2332"/>
+        <circle cx="340" cy="322" r="6" fill="rgba(201, 148, 85, 0.3)"/>
+    </g>
+    
+    <!-- Subtle texture overlay on main circle -->
+    <circle cx="256" cy="256" r="180" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1" opacity="0.5"/>
+    <circle cx="256" cy="256" r="175" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1" opacity="0.3"/>
+    
+    <!-- Highlight arc for polish -->
+    <path d="M 120 200 A 180 180 0 0 1 256 76 A 180 180 0 0 1 392 200" 
+          fill="none" 
+          stroke="rgba(255,255,255,0.15)" 
+          stroke-width="3" 
+          stroke-linecap="round"/>
+</svg>
